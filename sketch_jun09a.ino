@@ -71,15 +71,16 @@ void colorWipe(uint32_t color, int wait) {
     delay(wait);                           //  Pause for a moment
   }
 }
-//modulo sin function
-double sin_mod(long time_millis, double a, double offset_seconds)
+//modulo sin function for milliseconds - note this version cannot handle 
+// time going backwards - due to the unsigned long - so 'a' must be positive
+double sin_mod(unsigned long time_millis, double a, double offset_seconds)
 {
   //hopefully this value doesn't blow out the floating pt math :(
   // this function will be more precise if more digits of pi can be preserved...
-  double func_periodLengthSeconds = (2.0*PI) / a;
+  double func_periodLengthSeconds = (TWO_PI) / a;
 
-  long func_periodLengthMilliseconds = long(func_periodLengthSeconds*1000.0);
-  long period_mod_time = (time_millis) % func_periodLengthMilliseconds;
+  unsigned long func_periodLengthMilliseconds = (unsigned long)(func_periodLengthSeconds*1000.0);
+  unsigned long period_mod_time = (time_millis) % func_periodLengthMilliseconds;
 
   //finally, convert 'time' to floating point
   double float_time = period_mod_time / 1000.0;
@@ -90,18 +91,25 @@ double sin_mod(long time_millis, double a, double offset_seconds)
 
 void newThing( int wait) 
 {
-  float t = millis()/1000.0f;
+  unsigned long t_millis = millis();
+  float t = t_millis/1000.0f;
+  
   float pixCountDenom = 1.f/ strip.numPixels();
-  float r = .4+.35*sin(t*.3+1);
-  float g = .5-.45*sin(t*.5+2);
-  float b = .3-.21*sin(t*-.4+3);
+  
+  float r = .4+.35*sin_mod(t_millis,0.35,1);
+  float g = .5-.45*sin_mod(t_millis,0.5,2);
+  float b = .3-.21*sin_mod(t_millis,0.41,1);
+  
   for(int i=0; i<strip.numPixels(); i++) 
   { 
 //    inoise8(t,i,0);
       float ypct = i*pixCountDenom;
-      strip.setPixelColor(i, strip.Color((1+sin(t*.1+(ypct*r)*TWO_PI))/2.f*200.f, 
-                                         (1+sin(t*.15+(ypct*g)*TWO_PI))/2.f*200.f,//sin(t*.15+(ypct*g)*PI)*255,
-                                         (1+sin(t*.2 +(ypct*b)*TWO_PI))/2.f*200.f));//sin(t*.2 +(ypct*b)*PI)*255));
+      ;
+      ;
+      ;
+      strip.setPixelColor(i, strip.Color((1 + sin_mod(t_millis,0.1, (ypct*r)*TWO_PI)  )/2.f*200.f, 
+                                         (1 + sin_mod(t_millis,0.15, (ypct*g)*TWO_PI) )/2.f*200.f,
+                                         (1 + sin_mod(t_millis,0.2, (ypct*b)*TWO_PI)  )/2.f*200.f));
   }
   strip.show(); // Update strip with new contents
   delay(wait);  // Pause for a moment
